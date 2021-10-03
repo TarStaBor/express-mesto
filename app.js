@@ -17,7 +17,7 @@ mongoose.connect('mongodb://localhost:27017/mestodb', {
 
 app.use((req, res, next) => {
   req.user = {
-    _id: '61572cc81aea050cbaa400c9',
+    _id: '615a0221a3293c61877803c5',
   };
 
   next();
@@ -26,8 +26,9 @@ app.use((req, res, next) => {
 app.use('/users', require('./routes/users'));
 app.use('/cards', require('./routes/cards'));
 
-app.use('/users/me', require('./routes/users'));
-app.use('/users/me/avatar', require('./routes/users'));
+app.use((req, res) => {
+  res.status(404).send({ message: 'Ресурс не найден' });
+});
 
 app.listen(PORT, () => {
   // eslint-disable-next-line no-console

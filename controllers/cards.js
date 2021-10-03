@@ -31,7 +31,12 @@ const deleteCard = (req, res) => {
       }
       return res.status(404).send({ message: 'Карточка не найдена' });
     })
-    .catch((err) => res.status(500).send({ message: `Ошибка: ${err}` }));
+    .catch((err) => {
+      if (err.name === 'CastError') {
+        return res.status(400).send({ message: 'Ошибка: Передан невалидный id' });
+      }
+      return res.status(500).send({ message: `Ошибка: ${err}` });
+    });
 };
 
 // поставить лайк карточке
@@ -47,6 +52,8 @@ const putLike = (req, res) => {
     .catch((err) => {
       if (err.name === 'ValidationError') {
         return res.status(400).send({ message: 'Ошибка: Переданы некорректные данные для постановки лайка' });
+      } if (err.name === 'CastError') {
+        return res.status(400).send({ message: 'Ошибка: Передан невалидный id' });
       }
       return res.status(500).send({ message: `Ошибка: ${err}` });
     });
@@ -64,7 +71,9 @@ const deleteLike = (req, res) => {
     })
     .catch((err) => {
       if (err.name === 'ValidationError') {
-        return res.status(400).send({ message: 'Ошибка: Переданы некорректные данные для снятии лайка' });
+        return res.status(400).send({ message: 'Ошибка: Переданы некорректные данные для снятия лайка' });
+      } if (err.name === 'CastError') {
+        return res.status(400).send({ message: 'Ошибка: Передан невалидный id' });
       }
       return res.status(500).send({ message: `Ошибка: ${err}` });
     });

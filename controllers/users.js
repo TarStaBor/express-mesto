@@ -17,7 +17,12 @@ const getUser = (req, res) => {
       }
       return res.status(404).send({ message: 'Пользователь не найден' });
     })
-    .catch((err) => res.status(500).send({ message: `Ошибка: ${err}` }));
+    .catch((err) => {
+      if (err.name === 'CastError') {
+        return res.status(400).send({ message: 'Ошибка: Передан невалидный id' });
+      }
+      return res.status(500).send({ message: `Ошибка: ${err}` });
+    });
 };
 
 // создание пользователя
@@ -36,7 +41,7 @@ const createUser = (req, res) => {
 
 // обновление профиля
 const patchUser = (req, res) => {
-  User.findByIdAndUpdate(req.params.id,
+  User.findByIdAndUpdate(req.user._id,
     { name: req.body.name, about: req.body.about }, { new: true, runValidators: true })
     .then((user) => {
       if (user) {
@@ -54,7 +59,7 @@ const patchUser = (req, res) => {
 
 // обновление аватара
 const patchAvatar = (req, res) => {
-  User.findByIdAndUpdate(req.params.id,
+  User.findByIdAndUpdate(req.user._id,
     { avatar: req.body.avatar }, { new: true, runValidators: true })
     .then((user) => {
       if (user) {

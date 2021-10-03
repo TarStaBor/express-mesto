@@ -14,8 +14,8 @@ router.get('/:id', getUser);
 // создание пользователя
 router.post('/', createUser);
 // обновление профиля
-router.patch('/:id', patchUser);
+router.patch('/me', patchUser);
 // обновление аватара
-router.patch('/:id/avatar', patchAvatar);
+router.patch('/me/avatar', patchAvatar);
 
 module.exports = router;
