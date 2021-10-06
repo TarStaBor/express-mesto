@@ -39,5 +39,7 @@
 ## В дальнейшем данный документ будет пополняться информацией о новых технологиях, используемых при обучении.
 
 ---
+## [Посмотреть работу](https://tarstabor.github.io/how-to-learn/)
+---
 
 ![Иллюстрация к проекту](https://habrastorage.org/webt/bs/ml/lo/bsmllozt2li3jmn_6ec8vy4krdq.png)
