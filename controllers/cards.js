@@ -1,82 +1,96 @@
 const Card = require('../models/card');
+const NotFoundError = require('../errors/not-found-err');
+const BadRequestError = require('../errors/bad-request-err');
+const InternalServerError = require('../errors/internal-server-err');
+const ForbiddenError = require('../errors/forbidden-err');
 
 // получение всех карточек
-const getCards = (req, res) => {
+const getCards = (req, res, next) => {
   Card.find({})
     .then((cards) => res.send(cards))
-    .catch((err) => res.status(500).send({ message: `Ошибка: ${err}` }));
+    .catch((err) => {
+      throw new InternalServerError(`Ошибка: ${err}`);
+    })
+    .catch(next);
 };
 
 // создание карточки
-const createCard = (req, res) => {
+const createCard = (req, res, next) => {
   const { name, link } = req.body;
 
   Card.create({ name, link, owner: req.user._id })
     .then((card) => res.send(card))
     .catch((err) => {
       if (err.name === 'ValidationError') {
-        return res.status(400).send({ message: `Ошибка: Переданы некорректные данные при создании карточки - ${err}` });
+        throw new BadRequestError(`Ошибка: Переданы некорректные данные при создании карточки - ${err}`);
       }
-      return res.status(500).send({ message: `Ошибка: ${err}` });
-    });
+      throw new InternalServerError(`Ошибка: ${err}`);
+    })
+    .catch(next);
 };
 
 // удаление карточки
-const deleteCard = (req, res) => {
+const deleteCard = (req, res, next) => {
   const { id } = req.params;
-  Card.findByIdAndRemove(id)
+  Card.findById(id)
     .then((card) => {
-      if (card) {
-        return res.send({ message: 'Карточка удалена' });
+      if (card && card.owner.toString() === req.user._id) {
+        Card.deleteOne({ _id: card._id })
+          .then(res.send({ message: 'Карточка удалена' }));
+      } else {
+        throw new ForbiddenError('Запрещено удалять карточки чужих пользователей');
       }
-      return res.status(404).send({ message: 'Карточка не найдена' });
     })
     .catch((err) => {
       if (err.name === 'CastError') {
-        return res.status(400).send({ message: 'Ошибка: Передан невалидный id' });
+        throw new BadRequestError('Ошибка: Передан невалидный id');
       }
-      return res.status(500).send({ message: `Ошибка: ${err}` });
-    });
+      throw new InternalServerError(`Ошибка: ${err}`);
+    })
+    .catch(next);
 };
 
 // поставить лайк карточке
-const putLike = (req, res) => {
+const putLike = (req, res, next) => {
   Card.findByIdAndUpdate(req.params.cardId, { $addToSet: { likes: req.user._id } },
     { new: true, runValidators: true })
     .then((card) => {
       if (card) {
         return res.send({ message: 'Лайк' });
       }
-      return res.status(404).send({ message: 'Карточка не найдена' });
+      throw new NotFoundError('Карточка не найдена');
     })
     .catch((err) => {
       if (err.name === 'ValidationError') {
-        return res.status(400).send({ message: 'Ошибка: Переданы некорректные данные для постановки лайка' });
+        throw new BadRequestError('Ошибка: Переданы некорректные данные для постановки лайка');
       } if (err.name === 'CastError') {
-        return res.status(400).send({ message: 'Ошибка: Передан невалидный id' });
+        throw new BadRequestError('Ошибка: Передан невалидный id');
       }
-      return res.status(500).send({ message: `Ошибка: ${err}` });
-    });
+      throw new InternalServerError(`Ошибка: ${err}`);
+    })
+    .catch(next);
 };
 
 // убрать лайк карточки
-const deleteLike = (req, res) => {
+const deleteLike = (req, res, next) => {
   Card.findByIdAndUpdate(req.params.cardId, { $pull: { likes: req.user._id } },
     { new: true, runValidators: true })
     .then((card) => {
       if (card) {
         return res.send({ message: 'ДизЛайк' });
       }
-      return res.status(404).send({ message: 'Карточка не найдена' });
+      throw new NotFoundError('Карточка не найдена');
     })
+
     .catch((err) => {
       if (err.name === 'ValidationError') {
-        return res.status(400).send({ message: 'Ошибка: Переданы некорректные данные для снятия лайка' });
+        throw new BadRequestError('Ошибка: Переданы некорректные данные для снятия лайка');
       } if (err.name === 'CastError') {
-        return res.status(400).send({ message: 'Ошибка: Передан невалидный id' });
+        throw new BadRequestError('Ошибка: Передан невалидный id');
       }
-      return res.status(500).send({ message: `Ошибка: ${err}` });
-    });
+      throw new InternalServerError(`Ошибка: ${err}`);
+    })
+    .catch(next);
 };
 
 module.exports = {
