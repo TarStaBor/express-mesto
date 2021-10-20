@@ -1,6 +1,8 @@
 const mongoose = require('mongoose');
 const isEmail = require('validator/lib/isEmail');
 const bcrypt = require('bcrypt');
+const { isURL } = require('validator');
+const regExp = require('../regexp/regexp');
 
 const userSchema = new mongoose.Schema(
   {
@@ -24,12 +26,15 @@ const userSchema = new mongoose.Schema(
       minlength: 3,
       default:
         'https://pictures.s3.yandex.net/resources/jacques-cousteau_1604399756.png',
+      validate: {
+        validator: (v) => isURL(v),
+        message: 'Неправильный формат URL',
+      },
     },
     // email пользователя
     email: {
       type: String,
       required: true,
-      minlength: 6,
       unique: true,
       validate: {
         validator: (v) => isEmail(v),
@@ -46,10 +51,7 @@ const userSchema = new mongoose.Schema(
   { versionKey: false },
 );
 
-userSchema.path('avatar').validate((val) => {
-  const regex = /^(ftp|http|https):\/\/[^ "]+$/;
-  return regex.test(val);
-}, 'Неправильный формат URL');
+userSchema.path('avatar').validate((val) => regExp.test(val), 'Неправильный формат URL');
 
 // eslint-disable-next-line func-names
 userSchema.statics.findUserByCredentials = function (email, password) {

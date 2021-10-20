@@ -4,15 +4,12 @@ const User = require('../models/user');
 const NotFoundError = require('../errors/not-found-err');
 const BadRequestError = require('../errors/bad-request-err');
 const ConflictError = require('../errors/conflict-err');
-const InternalServerError = require('../errors/internal-server-err');
+const UnauthorizedError = require('../errors/unauthorized-err');
 
 // получение всех пользователей
 const getUsers = (req, res, next) => {
   User.find({})
     .then((users) => res.send(users))
-    .catch((err) => {
-      throw new InternalServerError(`Ошибка: ${err}`);
-    })
     .catch(next);
 };
 
@@ -28,11 +25,11 @@ const getUser = (req, res, next) => {
     })
     .catch((err) => {
       if (err.name === 'CastError') {
-        throw new BadRequestError('Ошибка: Передан невалидный id');
+        next(BadRequestError('Ошибка: Передан невалидный id'));
+      } else {
+        next(err);
       }
-      throw new InternalServerError(`Ошибка: ${err}`);
-    })
-    .catch(next);
+    });
 };
 
 // информация о текущем пользователе
@@ -40,9 +37,6 @@ const getUserMe = (req, res, next) => {
   User.findById(req.user._id)
     .then((user) => {
       res.send({ user });
-    })
-    .catch((err) => {
-      throw new InternalServerError(`Ошибка: ${err}`);
     })
     .catch(next);
 };
@@ -64,17 +58,23 @@ const createUser = (req, res, next) => {
       email,
       password: hash,
     }))
-    .then((user) => res.send(user))
+    .then(() => res.send({
+      data: {
+        name,
+        about,
+        avatar,
+        email,
+      },
+    }))
     .catch((err) => {
       if (err.name === 'ValidationError') {
-        throw new BadRequestError(`Ошибка: Переданы некорректные данные при создании пользователя - ${err}`);
+        next(new BadRequestError(`Ошибка: Переданы некорректные данные при создании пользователя - ${err}`));
+      } else if (err.name === 'MongoServerError') {
+        next(new ConflictError('Ошибка: Пользователь с такой почтой уже зарегистрирован'));
+      } else {
+        next(err);
       }
-      if (err.name === 'MongoServerError') {
-        throw new ConflictError('Ошибка: Пользователь с такой почтой уже зарегистрирован');
-      }
-      throw new InternalServerError(`Ошибка: ${err}`);
-    })
-    .catch(next);
+    });
 };
 
 // вход
@@ -90,12 +90,8 @@ const login = (req, res, next) => {
       res.send({ token });
     })
     .catch((err) => {
-      if (err.name === 'ValidationError') {
-        throw new BadRequestError(`Ошибка: Переданы некорректные данные авторизации - ${err}`);
-      }
-      throw new InternalServerError(`Ошибка: ${err}`);
-    })
-    .catch(next);
+      next(new UnauthorizedError(err.message));
+    });
 };
 
 // обновление профиля
@@ -113,11 +109,11 @@ const patchUser = (req, res, next) => {
     })
     .catch((err) => {
       if (err.name === 'ValidationError') {
-        throw new BadRequestError(`Ошибка: Переданы некорректные данные при обновлении профиля - ${err}`);
+        next(new BadRequestError(`Ошибка: Переданы некорректные данные при обновлении профиля - ${err}`));
+      } else {
+        next(err);
       }
-      throw new InternalServerError(`Ошибка: ${err}`);
-    })
-    .catch(next);
+    });
 };
 
 // обновление аватара
@@ -135,11 +131,11 @@ const patchAvatar = (req, res, next) => {
     })
     .catch((err) => {
       if (err.name === 'ValidationError') {
-        throw new BadRequestError(`Ошибка: Переданы некорректные данные при обновлении аватара - ${err}`);
+        next(new BadRequestError(`Ошибка: Переданы некорректные данные при обновлении аватара - ${err}`));
+      } else {
+        next(err);
       }
-      throw new InternalServerError(`Ошибка: ${err}`);
-    })
-    .catch(next);
+    });
 };
 
 module.exports = {
