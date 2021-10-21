@@ -4,6 +4,7 @@ const { errors } = require('celebrate');
 const bodyParser = require('body-parser');
 const { celebrate, Joi } = require('celebrate');
 const NotFoundError = require('./errors/not-found-err');
+const regExp = require('./regexp/regexp');
 
 const {
   createUser,
@@ -26,7 +27,10 @@ app.post('/signup', celebrate({
   body: Joi.object().keys({
     email: Joi.string().required().min(6).email(),
     password: Joi.string().required().min(8),
-  }).unknown(true),
+    name: Joi.string().min(2).max(30),
+    about: Joi.string().min(2).max(30),
+    avatar: Joi.string().pattern(regExp),
+  }),
 }), createUser);
 
 // авторизация
