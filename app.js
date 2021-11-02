@@ -1,8 +1,10 @@
+const cors = require('cors');
 const express = require('express');
 const mongoose = require('mongoose');
 const { errors } = require('celebrate');
 const bodyParser = require('body-parser');
 const { celebrate, Joi } = require('celebrate');
+const { requestLogger, errorLogger } = require('./middlewares/logger');
 const NotFoundError = require('./errors/not-found-err');
 const regExp = require('./regexp/regexp');
 
@@ -12,7 +14,7 @@ const {
 } = require('./controllers/users');
 const auth = require('./middlewares/auth');
 
-const { PORT = 3000 } = process.env;
+const { PORT = 4000 } = process.env;
 const app = express();
 
 app.use(bodyParser.json());
@@ -21,6 +23,25 @@ app.use(bodyParser.urlencoded({ extended: true }));
 mongoose.connect('mongodb://localhost:27017/mestodb', {
   useNewUrlParser: true,
 });
+
+const options = {
+  origin: [
+    'http://localhost:3000',
+    'http://mesto-frontend.tarstabor.nomoredomains.rocks',
+    'https://mesto-frontend.tarstabor.nomoredomains.rocks',
+    // 'https://YOUR.github.io',
+  ],
+  methods: ['GET', 'HEAD', 'PUT', 'PATCH', 'POST', 'DELETE'],
+  preflightContinue: false,
+  optionsSuccessStatus: 204,
+  allowedHeaders: ['Content-Type', 'origin', 'Authorization'],
+  credentials: true,
+};
+
+app.use('*', cors(options)); // ПЕРВЫМ!
+
+// логгер запросов
+app.use(requestLogger);
 
 // регистрация
 app.post('/signup', celebrate({
@@ -49,6 +70,9 @@ app.use('/cards', require('./routes/cards'));
 app.use((req, res, next) => {
   next(new NotFoundError('Ресурс не найден!!!'));
 });
+
+// логгер ошибок
+app.use(errorLogger);
 
 // обработчик ошибок celebrate
 app.use(errors());

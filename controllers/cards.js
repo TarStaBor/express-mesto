@@ -56,7 +56,7 @@ const putLike = (req, res, next) => {
       if (!card) {
         throw new NotFoundError('Карточка не найдена');
       }
-      return res.send({ message: 'Лайк' });
+      return res.send(card);
     })
     .catch((err) => {
       if (err.name === 'ValidationError') {
@@ -77,7 +77,7 @@ const deleteLike = (req, res, next) => {
       if (!card) {
         throw new NotFoundError('Карточка не найдена');
       }
-      return res.send({ message: 'ДизЛайк' });
+      return res.send(card);
     })
     .catch((err) => {
       if (err.name === 'ValidationError') {
