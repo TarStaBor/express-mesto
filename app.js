@@ -39,10 +39,16 @@ const options = {
   credentials: true,
 };
 
-app.use('*', cors(options)); // ПЕРВЫМ!
+app.use('*', cors(options));
 
 // логгер запросов
 app.use(requestLogger);
+
+app.get('/crash-test', () => {
+  setTimeout(() => {
+    throw new Error('Сервер сейчас упадёт');
+  }, 0);
+});
 
 // регистрация
 app.post('/signup', celebrate({
