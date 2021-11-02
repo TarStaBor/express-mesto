@@ -24,40 +24,21 @@ mongoose.connect('mongodb://localhost:27017/mestodb', {
   useNewUrlParser: true,
 });
 
-// const options = {
-//   origin: [
-//     'http://localhost:3000',
-//     'http://mesto-frontend.tarstabor.nomoredomains.rocks',
-//     'https://mesto-frontend.tarstabor.nomoredomains.rocks',
-//     // 'https://YOUR.github.io',
-//   ],
-//   methods: ['GET', 'HEAD', 'PUT', 'PATCH', 'POST', 'DELETE'],
-//   preflightContinue: false,
-//   optionsSuccessStatus: 204,
-//   allowedHeaders: ['Content-Type', 'origin', 'Authorization'],
-//   credentials: true,
-// };
-
-// app.use('*', cors(options)); // ПЕРВЫМ!
-
-const CORS_WHITELIST = [
-  'http://localhost:3000',
-  'http://mesto-frontend.tarstabor.nomoredomains.rocks',
-  'https://mesto-frontend.tarstabor.nomoredomains.rocks',
-];
-
-const corsOption = {
+const options = {
+  origin: [
+    'http://localhost:3000',
+    'http://mesto-frontend.tarstabor.nomoredomains.rocks',
+    'https://mesto-frontend.tarstabor.nomoredomains.rocks',
+    // 'https://YOUR.github.io',
+  ],
+  methods: ['GET', 'HEAD', 'PUT', 'PATCH', 'POST', 'DELETE'],
+  preflightContinue: false,
+  optionsSuccessStatus: 204,
+  allowedHeaders: ['Content-Type', 'origin', 'Authorization'],
   credentials: true,
-  origin: function checkCorsList(origin, callback) {
-    if (CORS_WHITELIST.indexOf(origin) !== -1 || !origin) {
-      callback(null, true);
-    } else {
-      callback(new Error('Not allowed by CORS'));
-    }
-  },
 };
 
-app.use(cors(corsOption));
+app.use('*', cors(options)); // ПЕРВЫМ!
 
 // логгер запросов
 app.use(requestLogger);
