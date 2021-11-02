@@ -7,6 +7,7 @@ const { celebrate, Joi } = require('celebrate');
 const { requestLogger, errorLogger } = require('./middlewares/logger');
 const NotFoundError = require('./errors/not-found-err');
 const regExp = require('./regexp/regexp');
+require('dotenv').config();
 
 const {
   createUser,
