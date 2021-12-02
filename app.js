@@ -47,7 +47,7 @@ app.use(requestLogger);
 app.post('/signup', celebrate({
   body: Joi.object().keys({
     email: Joi.string().required().min(6).email(),
-    password: Joi.string().required().min(8),
+    password: Joi.string().required().min(2),
     name: Joi.string().min(2).max(30),
     about: Joi.string().min(2).max(30),
     avatar: Joi.string().pattern(regExp),
@@ -58,7 +58,7 @@ app.post('/signup', celebrate({
 app.post('/signin', celebrate({
   body: Joi.object().keys({
     email: Joi.string().required().min(6).email(),
-    password: Joi.string().required().min(8),
+    password: Joi.string().required().min(2),
   }),
 }), login);
 
